@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/VinayNoogler000/ClipNexus-YT-Clone.git"
   },
-  "main": "src/index.js",
+  "main": "index.js",
   "bugs": {
     "url": "https://github.com/VinayNoogler000/ClipNexus-YT-Clone/issues"
   },
