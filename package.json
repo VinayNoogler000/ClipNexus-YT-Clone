@@ -1,0 +1,27 @@
+{
+  "name": "clip-nexus",
+  "version": "1.0.0",
+  "description": "A backend web app for ClipNexus where users can stream videos.",
+  "keywords": [
+    "javascript",
+    "backend",
+    "mongoose",
+    "mongodb"
+  ],
+  "homepage": "https://github.com/VinayNoogler000/ClipNexus-YT-Clone#readme",
+  "bugs": {
+    "url": "https://github.com/VinayNoogler000/ClipNexus-YT-Clone/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VinayNoogler000/ClipNexus-YT-Clone.git"
+  },
+  "license": "ISC",
+  "author": "Vinay Tambey",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "bun index.js"
+  }
+}
