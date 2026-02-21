@@ -1,8 +1,27 @@
-import mongoose from "mongoose";
-import 'dotenv/config';
-import { DB_NAME } from "./constants";
-import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./db/index.js";
 
+dotenv.config({path: "./env"})
+connectDB();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+import express from "express";
 const app = express();
 
 (async () => {
@@ -21,3 +40,4 @@ const app = express();
         console.error("Error Connecting with MongoDB Atlas", err);
     }
 })();
+*/
