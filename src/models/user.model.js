@@ -1,4 +1,5 @@
 import {Schema, Model} from "mongoose";
+import brcypt from "bcrypt";
 
 const userSchema = new Schema({
     userName: {
@@ -41,5 +42,26 @@ const userSchema = new Schema({
         type: String,
     }
 }, {timestamps: true});
+
+userSchema.pre("save", async function(next) {
+    if (this.isModified("password")) {
+        try {
+            this.password = await brcypt.hash(this.password, 10);
+        }
+        catch(err) {
+            console.error("Error in Encrypting & Saving Password in DB: \n", err);
+        }
+    }
+    next();
+})
+
+userSchema.methods.isPasswordCorrect = async function(password) {
+    try {
+        return await brcypt.compare(password, this.password);
+    }
+    catch(err) {
+        console.error("Error in Comparing User-Entered-Pass with Encrypted Password: \n", err);
+    }
+}
 
 export const User = Model("User", userSchema);
