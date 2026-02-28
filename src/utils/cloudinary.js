@@ -16,7 +16,7 @@ const uploadAssetToCloudinary = async (filePath) => {
         }
 
         // Upload the file
-        const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto" });
+        const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
         console.log("File Successfully Uploaded \nResponse: " + response);
         return response;
     } catch (error) {
