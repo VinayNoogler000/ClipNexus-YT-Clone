@@ -1,8 +1,42 @@
 import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { User } from "../models/user.model.js";
+import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
+    // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
+    const {userName, email, password, fullName} = req.body;
+    const {avatar, coverImage} = req.files ? req.files : {};
+
+    // Validation - Check whether client has sent all the required data to create a new user or not?
+    if ([userName, email, password, fullName].some(field => (field?.trim() === ""))) {
+        throw new ApiError(400, "Missing Required User Data!");
+    }
+
+    // Check if the user already exists or not, by using Username or Email? if exists, then redirect to "/login" or else continue registration process
+    const userFound = await User.exists({ $or: [{ userName: userName }, { email: email }] });
+    if (userFound !== null) { // User Already Exists
+        throw new ApiError(409, "User with Username/Email Already Exists!");
+    }
+
+    // Validation and Upload the Avatar and Cover Image (if exists) to the Cloudinary's Server and Get their URL
+    if (!avatar) throw new ApiError(400, "User's Avatar doesn't exists [Required]");
+    avatarLocalPath =  avatar[0].path;
+    coverImgLocalPath = coverImage[0]?.path;
+    const uploadedAvatar = await uploadAssetToCloudinary(avatarLocalPath);
+    const uploadedCoverImg = await uploadAssetToCloudinary(coverImgLocalPath);
+
+    // Add the user to the DB "users" collection as an Object/Document, whose avatar and coverImage will be Cloudinary-URLs
+    
+    // Check if the New User has successfully created/stored in the DB or not? If Yes, then send a response (without password and refresh token), and if No, then identify-fix the issue and repeat the process.
+
+    // Login the User automatically upon User-Registration (after successful addition of new user in DB)
+    
+    // After automatic log-in, Redirect the User to Homepage
+
     res.status(200).json({
-        message: "User Successfully Registered!"
+        message: "User Successfully Registered!",
+        data: { ...req.body, ...req.files } || "none",
     })
 })
 
