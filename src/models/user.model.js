@@ -1,5 +1,5 @@
 import {Schema, model} from "mongoose";
-import brcypt from "bcrypt";
+import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken'
 
 const userSchema = new Schema({
@@ -47,7 +47,7 @@ const userSchema = new Schema({
 userSchema.pre("save", async function(next) {
     if (this.isModified("password")) {
         try {
-            this.password = await brcypt.hash(this.password, 10);
+            this.password = await bcrypt.hash(this.password, 10);
         }
         catch(err) {
             console.error("Error in Encrypting & Saving Password in DB: \n", err);
