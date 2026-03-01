@@ -28,7 +28,7 @@ const registeredUser = asyncHandler(async (req, res, err) => {
     const uploadedAvatar = await uploadAssetToCloudinary(avatarLocalPath);
     const uploadedCoverImg = coverImgLocalPath && (await uploadAssetToCloudinary(coverImgLocalPath));
 
-    if (!uploadedAvatar) throw new ApiError(400, "User's Avatar doesn't exists [Required]");
+    if (!uploadedAvatar) throw new ApiError(500, "Error in Uploading User Avatar to Cloud!");
 
     // Add the user to the DB "users" collection as an Object/Document, whose avatar and coverImage will be Cloudinary-URLs
     
