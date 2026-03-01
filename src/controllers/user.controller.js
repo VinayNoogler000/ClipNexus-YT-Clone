@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
+import ApiResponse from "../utils/ApiResponse.js";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
@@ -31,17 +32,24 @@ const registeredUser = asyncHandler(async (req, res, err) => {
     if (!uploadedAvatar) throw new ApiError(500, "Error in Uploading User Avatar to Cloud!");
 
     // Add the user to the DB "users" collection as an Object/Document, whose avatar and coverImage will be Cloudinary-URLs
+    const newUser = await User.create({
+        userName: userName.toLowerCase(),
+        email,
+        password,
+        fullName,
+        avatar: uploadedAvatar.secure_url,
+        coverImage: uploadedCoverImg?.secure_url || ""
+    });
     
     // Check if the New User has successfully created/stored in the DB or not? If Yes, then send a response (without password and refresh token), and if No, then identify-fix the issue and repeat the process.
-
+    const savedUser = await User.findById(newUser._id).select(["-password", "-refreshToken"]);
+    if (!savedUser) throw new ApiError(500, "Error in Saving New User to DB!");
+    
     // Login the User automatically upon User-Registration (after successful addition of new user in DB)
     
     // After automatic log-in, Redirect the User to Homepage
 
-    res.status(200).json({
-        message: "User Successfully Registered!",
-        data: { ...req.body, ...req.files } || "none",
-    })
+    res.status(201).json(new ApiResponse(200, savedUser, "User Registered Successfully!"));
 })
 
 export {registeredUser};
