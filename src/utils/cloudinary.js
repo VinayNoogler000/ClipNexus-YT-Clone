@@ -21,7 +21,7 @@ const uploadAssetToCloudinary = async (filePath) => {
         return response;
     } catch (error) {
         fs.unlinkSync(filePath); // removes/deletes the locally stored file (in "/public/temp")
-        console.error("Error in Uploading Image: " + error);
+        console.error("Error in Uploading Image: ", error);
         return null;
     }
 };
