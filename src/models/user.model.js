@@ -57,7 +57,7 @@ userSchema.pre("save", async function() {
 
 userSchema.methods.isPasswordCorrect = async function(password) {
     try {
-        return await brcypt.compare(password, this.password);
+        return await bcrypt.compare(password, this.password);
     }
     catch(err) {
         console.error("Error in Comparing User-Entered-Pass with Encrypted Password: \n", err);
