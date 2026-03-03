@@ -17,8 +17,8 @@ const uploadAssetToCloudinary = async (filePath) => {
 
         // Upload the file
         const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
-        console.log("File Successfully Uploaded \nResponse: " + response);
-        fs.unlinkSync(filePath); // removes/deletes the locally stored files (avatar/coverImg) from "/public/temp/"
+        // console.log("File Successfully Uploaded \nResponse: " + response);
+        fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
         return response;
     } catch (error) {
         fs.unlinkSync(filePath);
