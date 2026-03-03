@@ -9,22 +9,22 @@ cloudinary.config({
 
 // Function to Uploads a image/video file
 const uploadAssetToCloudinary = async (filePath) => {
-    try {
-        if (!filePath) {
-            console.log("Please pass the 'filePath' as input to this function!");
-            return null;
-        }
-
-        // Upload the file
-        const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
-        // console.log("File Successfully Uploaded \nResponse: " + response);
-        fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
-        return response;
-    } catch (error) {
-        fs.unlinkSync(filePath);
-        console.error("Error in Uploading Image: ", error);
+    if (!filePath) {
+        console.error("Please pass the 'filePath' as input to this function!");
         return null;
     }
+
+    let response;
+    try {
+        // Upload the file
+        response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
+        
+    } catch (error) {
+        console.error("Error in Uploading Image: ", error);
+        response = null;
+    }
+    fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
+    return response;
 };
 
 export { uploadAssetToCloudinary };
