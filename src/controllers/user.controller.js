@@ -17,7 +17,7 @@ const registeredUser = asyncHandler(async (req, res, err) => {
     // Check if the user already exists or not, by using Username or Email? if exists, then redirect to "/login" or else continue registration process
     const userFound = await User.exists({ $or: [{ userName: userName }, { email: email }] });
     if (userFound !== null) { // User Already Exists
-        throw new ApiError(409, "User with Username/Email Already Exists!");
+        throw new ApiError(409, "User with Username/Email Already Exists! Either Log-In with the existing account, or Sign-Up with a different new account.");
     }
 
     // Validation and Upload the Avatar and Cover Image (if exists) to the Cloudinary's Server and Get their URL
