@@ -45,11 +45,12 @@ const registeredUser = asyncHandler(async (req, res, err) => {
     const savedUser = await User.findById(newUser._id).select(["-password", "-refreshToken"]);
     if (!savedUser) throw new ApiError(500, "Error in Saving New User to DB!");
     
+    res.status(201).json(new ApiResponse(200, savedUser, "User Registered Successfully!"));
+    
     // Login the User automatically upon User-Registration (after successful addition of new user in DB)
     
     // After automatic log-in, Redirect the User to Homepage
 
-    res.status(201).json(new ApiResponse(200, savedUser, "User Registered Successfully!"));
 })
 
 export {registeredUser};
