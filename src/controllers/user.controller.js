@@ -53,4 +53,58 @@ const registeredUser = asyncHandler(async (req, res, err) => {
 
 })
 
-export {registeredUser};
+const loginUser = asyncHandler(async (req, res, err) => {
+    // Extract User Data (Username, Email, and Password) sent from the Client, stored in the `req.body`
+    const {userName, email, password} = req.body;
+    
+    // Perform Validation, by checking that the "username or email" does exists and are valid or not
+    if (!userName && !email) throw new ApiError(400, "Username or Email is Required!");
+    const userNameorEmail = userName || email;
+
+    // Check if the User exists in the DB or not, by using "username or email" [either of these should exists]
+    const userInDB = await User.findOne({ $or: [{ userName }, { email }] });
+
+    //If User Not Exists, then send response to the client saying "User doesn't Exists. Kindly Sign-Up or Create a New Account 
+    if (!userInDB) throw new ApiError(400, `User '${userNameorEmail}' doesn't Exists!`);
+
+    // If User Exists, then Validate & Match the "password sent in Client-Request" with "password stored in DB"
+    if (!password) throw new ApiError(401, "Password is Required!");
+    const isPassMatched = await userInDB.isPasswordCorrect(password);
+
+    // If Wrong Password, then send Response to the Client "Wrong Password! Kindly, Enter Correct Password for the [Username/Email]"
+    if (!isPassMatched) throw new ApiError(401, `Wrong Password for '${userNameorEmail}'!`);
+    
+    // If Correct Password, then Generate Access and Refresh Tokens;
+    const tokens = {
+        accessToken: userInDB.generateAccessToken(),
+        refreshToken: userInDB.generateRefreshToken()
+    }; 
+    
+    // Store Refresh Token in DB (not Access Token):
+    userInDB.refreshToken = tokens.refreshToken;
+    const loggedInUser = await userInDB.save();
+    console.log("New User's Refresh Token Updated in DB: ", response);
+    
+    // Send a ApiResponse to the Client, which will be definitely having "Access & Refreh Tokens", for User Authorization, and generating new Access Token by using Refresh Token when the old one expires.
+    const options = { // cookie-options
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+            .status(200)
+            .cookie("accessToken", tokens.accessToken, options)
+            .cookie("refreshToken", tokens.refreshToken, options)
+            .json(
+                new ApiResponse(
+                    201, 
+                    {...loggedInUser, password: "not-accessible", accessToken: tokens.accessToken}, 
+                    "User Logged-In Successfully!"
+                )
+            );
+
+    // Or Re-direct the user to the webpage (or Resource URL) which they were trying to access, but instead first asked to authenticate them by logging-in.
+    
+})
+
+export {registeredUser, loginUser};
