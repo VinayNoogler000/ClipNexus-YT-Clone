@@ -81,9 +81,11 @@ const loginUser = asyncHandler(async (req, res, err) => {
     }; 
     
     // Store Refresh Token in DB (not Access Token):
-    userInDB.refreshToken = tokens.refreshToken;
-    const loggedInUser = await userInDB.save();
-    console.log("New User's Refresh Token Updated in DB: ", response);
+    const loggedInUser = await User.findByIdAndUpdate(
+        userInDB._id,
+        { refreshToken: tokens.refreshToken },
+        { returnDocument: "after" }
+    ).select("-password");
     
     // Send a ApiResponse to the Client, which will be definitely having "Access & Refreh Tokens", for User Authorization, and generating new Access Token by using Refresh Token when the old one expires.
     const options = { // cookie-options
@@ -98,8 +100,8 @@ const loginUser = asyncHandler(async (req, res, err) => {
             .json(
                 new ApiResponse(
                     201, 
-                    {...loggedInUser, password: "not-accessible", accessToken: tokens.accessToken}, 
-                    "User Logged-In Successfully!"
+                    { user: { ...loggedInUser._doc, accessToken: tokens.accessToken} }, 
+                    "User Logged-In!"
                 )
             );
 
