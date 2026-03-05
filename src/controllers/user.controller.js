@@ -114,7 +114,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         req.user._id,
         { $set: { refreshToken: "" } },
         { returnDocument: "after" }
-    );
+    ).select("_id userName");
 
     const options = { // cookie-options
         httpOnly: true,
@@ -125,7 +125,7 @@ const logoutUser = asyncHandler(async (req, res) => {
             .status(200)
             .clearCookie("accessToken", options)
             .clearCookie("refreshToken", options)
-            .json(new ApiResponse(201, {}, "User Logged-Out!"));
+            .json(new ApiResponse(201, {user: {...updatedUser._doc}}, "User Logged-Out!"));
 })
 
 export {registeredUser, loginUser, logoutUser};
