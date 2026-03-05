@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError";
 import asyncHandler from "../utils/asyncHandler";
 import { User } from "../models/user.model";
 
-export default verifyJWT = asyncHandler(async (req, res, next) => {
+export default verifyJWT = asyncHandler(async (req, _, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorizaton")?.replace("Bearer ", "");
     
