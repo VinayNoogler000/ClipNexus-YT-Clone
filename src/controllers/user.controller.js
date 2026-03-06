@@ -3,6 +3,9 @@ import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
+const genRefreshAndAccessTokens = (userInDB) => (
+    { accessToken: userInDB.generateAccessToken(), refreshToken: userInDB.generateRefreshToken() }
+);
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
@@ -75,15 +78,12 @@ const loginUser = asyncHandler(async (req, res, err) => {
     if (!isPassMatched) throw new ApiError(401, `Wrong Password for '${userNameorEmail}'!`);
     
     // If Correct Password, then Generate Access and Refresh Tokens;
-    const tokens = {
-        accessToken: userInDB.generateAccessToken(),
-        refreshToken: userInDB.generateRefreshToken()
-    }; 
+    const { accessToken, refreshToken } = genRefreshAndAccessTokens(userInDB); 
     
     // Store Refresh Token in DB (not Access Token):
     const loggedInUser = await User.findByIdAndUpdate(
         userInDB._id,
-        { refreshToken: tokens.refreshToken },
+        { refreshToken },
         { returnDocument: "after" }
     ).select("-password");
     
@@ -95,8 +95,8 @@ const loginUser = asyncHandler(async (req, res, err) => {
 
     return res
             .status(200)
-            .cookie("accessToken", tokens.accessToken, options)
-            .cookie("refreshToken", tokens.refreshToken, options)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     201, 
