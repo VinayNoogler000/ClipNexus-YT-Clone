@@ -3,9 +3,21 @@ import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
-const genRefreshAndAccessTokens = (userInDB) => (
-    { accessToken: userInDB.generateAccessToken(), refreshToken: userInDB.generateRefreshToken() }
-);
+const genRefreshAndAccessTokens = async (userInDB) => {
+    const accessToken = userInDB.generateAccessToken();
+    const refreshToken = userInDB.generateRefreshToken();
+
+    userInDB.refreshToken = refreshToken;
+
+    try {
+        await userInDB.save({ validateBeforeSave: false });
+    }
+    catch(err) {
+        throw new ApiError(501, "Error in Saving Refresh-Token to DB");
+    }
+
+    return { accessToken, refreshToken };
+}
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
