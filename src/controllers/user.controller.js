@@ -90,7 +90,7 @@ const loginUser = asyncHandler(async (req, res, err) => {
     if (!isPassMatched) throw new ApiError(401, `Wrong Password for '${userNameorEmail}'!`);
     
     // If Correct Password, then Generate Access and Refresh Tokens;
-    const { accessToken, refreshToken } = genRefreshAndAccessTokens(userInDB); 
+    const { accessToken, refreshToken } = await genRefreshAndAccessTokens(userInDB); 
     
     // Store Refresh Token in DB (not Access Token):
     const loggedInUser = await User.findByIdAndUpdate(
