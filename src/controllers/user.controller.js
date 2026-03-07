@@ -27,7 +27,7 @@ const registeredUser = asyncHandler(async (req, res, err) => {
     const {avatar, coverImage} = req.files ? req.files : {};
 
     // Validation - Check whether client has sent all the required data to create a new user or not?
-    if ([userName, email, password, fullName].some(field => (field?.trim() === ""))) {
+    if ([userName, email, password, fullName].some(field => (!field || field.trim() === ""))) {
         throw new ApiError(400, "Missing Required User Data!");
     }
 
