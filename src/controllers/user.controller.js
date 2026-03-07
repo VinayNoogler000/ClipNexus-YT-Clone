@@ -146,37 +146,33 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const clientRefreshToken = req.cookies?.refreshToken;
         
     if (!clientRefreshToken) throw new ApiError(400, "Unauthorized Request! [RT Required]");
+
+    // verify RT (Refresh Token)
+    const decoded = jwt.verify(clientRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    // find the user if exists in the DB, with the "user_id" in RT:
+    const userInDB = await User.findById(decoded._id);
+
+    // if User Not Found then throw ApiError
+    if (!userInDB) throw new ApiError(400, "Invalid Refresh-Token!");
+
+    // if Both RTs (Client & DB) doesn't Matches then throw ApiError
+    if ( clientRefreshToken !== userInDB.refreshToken ) throw new ApiError(400, "Refresh-Token Expired orUsed!");
     
-    try {
-        // verify RT (Refresh Token)
-        const decoded = jwt.verify(clientRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    // If Found and RT Matched, then generate a new Tokens, and the send in server's response to client
+    const { accessToken, refreshToken } = await genRefreshAndAccessTokens(userInDB);
     
-        // find the user if exists in the DB, with the "user_id" in RT:
-        const userInDB = await User.findById(decoded._id);
-    
-        // if User Not Found then throw ApiError
-        if (!userInDB) throw new ApiError(400, "Invalid Refresh-Token!");
-    
-        // if Both RTs (Client & DB) doesn't Matches then throw ApiError
-        if ( clientRefreshToken !== userInDB.refreshToken ) throw new ApiError(400, "Refresh-Token Expired or Used!");
-        
-        // If Found and RT Matched, then generate a new Tokens, and the send in server's response to client
-        const { accessToken, refreshToken } = await genRefreshAndAccessTokens(userInDB);
-        
-        const options = { // cookie-options
-            httpOnly: true,
-            secure: true,
-        }
-    
-        return res
-                .status(200)
-                .cookie("accessToken", accessToken, options)
-                .cookie("refreshToken", refreshToken, options)
-                .json(new ApiResponse(201, {accessToken, refreshToken}, "Access Tokens Refreshed!"));
-    } 
-    catch (error) {
-        throw new ApiError(401, (error?.message || "Invalid Refresh-Token! [Err Caught]"));
+    const options = { // cookie-options
+        httpOnly: true,
+        secure: true,
     }
+
+    return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(new ApiResponse(201, {accessToken, refreshToken}, "Access Tokens Refreshed!"));
+});
 });
 
 export {registeredUser, loginUser, logoutUser, refreshAccessToken};
