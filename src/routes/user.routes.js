@@ -13,8 +13,8 @@ router.post(
 
 router.post("/login", loginUser);
 
-router.get("/logout", verifyJWT, logoutUser);
+router.post("/logout", verifyJWT, logoutUser);
 
-router.get("/refresh-token", refreshAccessToken);
+router.post("/refresh-token", refreshAccessToken);
 
 export default router;
