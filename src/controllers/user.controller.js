@@ -157,7 +157,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if (!userInDB) throw new ApiError(400, "Invalid Refresh-Token!");
 
     // if Both RTs (Client & DB) doesn't Matches then throw ApiError
-    if ( clientRefreshToken !== userInDB.refreshToken ) throw new ApiError(400, "Refresh-Token Expired orUsed!");
+    if ( clientRefreshToken !== userInDB.refreshToken ) throw new ApiError(400, "Refresh-Token Expired or Used!");
     
     // If Found and RT Matched, then generate a new Tokens, and the send in server's response to client
     const { accessToken, refreshToken } = await genRefreshAndAccessTokens(userInDB);
@@ -173,6 +173,34 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .cookie("refreshToken", refreshToken, options)
             .json(new ApiResponse(201, {accessToken, refreshToken}, "Access Tokens Refreshed!"));
 });
+
+const changeCurrPassword = asyncHandler(async (req, res) => {
+    // take current and new password from the user, sent by the client in `req.body` 
+    const {oldPass, newPass} = req.body || {};
+
+    // Validate - check if the passwords sent by client or not, else throw Api Error
+    if (!oldPass || !newPass) throw new ApiError(400, "Both Old and New Passwords are Required!");
+
+    // Use `req.user._id` to find the User in DB
+    const userInDB = await User.findById(req.user._id).select("password");
+
+    // If User not found, then throw Api Error saying "Invalid or Expired Access Token!"
+    if (!userInDB) throw new ApiError(401, "Invalid or Expired Access Token!");
+
+    // If User found, check whether the current password matches with the DB Pass or not
+    const isPassMatched = await userInDB.isPasswordCorrect(oldPass);
+    
+    // If Wrong Curr Pass, then throw Api Error saying "Wrong Current Password"
+    if (!isPassMatched) throw new ApiError(402, "Wrong Old Password!");
+
+    // If Yes, then update the password field with new password
+    userInDB.password = newPass;
+    await userInDB.save({ validateBeforeSave: false });
+
+    // send response
+    return res
+            .status(200)
+            .json(new ApiResponse(201, {}, "Password Changed!"));
 });
 
-export {registeredUser, loginUser, logoutUser, refreshAccessToken};
+export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword};
