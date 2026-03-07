@@ -114,7 +114,7 @@ const loginUser = asyncHandler(async (req, res, err) => {
             .json(
                 new ApiResponse(
                     201, 
-                    { user: { ...loggedInUser._doc, accessToken: tokens.accessToken} }, 
+                    { user: { ...loggedInUser._doc, accessToken} }, 
                     "User Logged-In!"
                 )
             );
