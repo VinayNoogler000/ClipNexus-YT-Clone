@@ -203,4 +203,15 @@ const changeCurrPassword = asyncHandler(async (req, res) => {
             .json(new ApiResponse(201, {}, "Password Changed!"));
 });
 
-export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword};
+const getCurrUser = asyncHandler(async (req, res) => {
+    if (req.user) { // means, user already logged-in
+        const userInDB = await User.findById(req.user._id).select("-password -refreshToken");
+
+        return res
+                .status(200)
+                .json(new ApiResponse(201, {user: userInDB}, "Current User Fetched!"));
+    }
+    else throw new ApiError(401, "Unauthorized Request - User should be logged-in!");
+});
+
+export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser};
