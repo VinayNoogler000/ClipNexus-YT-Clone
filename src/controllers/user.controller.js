@@ -4,22 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken'
-
-const genRefreshAndAccessTokens = async (userInDB) => {
-    const accessToken = userInDB.generateAccessToken();
-    const refreshToken = userInDB.generateRefreshToken();
-
-    userInDB.refreshToken = refreshToken;
-
-    try {
-        await userInDB.save({ validateBeforeSave: false });
-    }
-    catch(err) {
-        throw new ApiError(501, "Error in Saving Refresh-Token to DB");
-    }
-
-    return { accessToken, refreshToken };
-}
+import { genRefreshAndAccessTokens } from "../utils/genTokens.js";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
