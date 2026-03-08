@@ -214,4 +214,22 @@ const getCurrUser = asyncHandler(async (req, res) => {
     else throw new ApiError(401, "Unauthorized Request - User should be logged-in!");
 });
 
-export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser};
+const updateAccDetails = asyncHandler(async (req, res) => {
+    const {userName, email, fullName} = req.body || {};
+
+    console.log(req.body);
+
+    if (!userName && !email && !fullName) throw new ApiError(401, "Either Username, Email or Full Name is Required!");
+
+    const userInDB = await User.findByIdAndUpdate(
+        req.user?._id,
+        { $set: { userName, email, fullName } },
+        { runValidators: true, returnDocument: "after" }
+    ).select("userName fullName email");
+
+    if (!userInDB) throw new ApiError(401, "Invalid Access Token!");
+
+    return res
+            .status(200)
+            .json(new ApiResponse(201, { user: userInDB }, "Account Details Updated!"));
+});
