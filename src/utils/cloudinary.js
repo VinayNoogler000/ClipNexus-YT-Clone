@@ -27,4 +27,11 @@ const uploadAssetToCloudinary = async (filePath) => {
     return response;
 };
 
-export { uploadAssetToCloudinary };
+// Function to Delete a image/video file permanently
+const deleteAssetFromCloudinary = (publicId) => {
+    cloudinary.uploader.destroy(publicId, { invalidate: true })
+    .then(result => console.log("Asset Delete Status: ", result.result))
+    .catch((err) => console.error("Error in Deleting Asset: ", err));
+}
+
+export { uploadAssetToCloudinary, deleteAssetFromCloudinary };

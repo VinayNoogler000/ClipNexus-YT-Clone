@@ -1,10 +1,11 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadAssetToCloudinary } from "../utils/cloudinary.js";
+import { deleteAssetFromCloudinary, uploadAssetToCloudinary } from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken'
 import { genRefreshAndAccessTokens } from "../utils/genTokens.js";
+import { getImgPublicIdUsingURLSync } from "../utils/getImgPublicId.js";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
@@ -202,8 +203,6 @@ const getCurrUser = asyncHandler(async (req, res) => {
 const updateAccDetails = asyncHandler(async (req, res) => {
     const {userName, email, fullName} = req.body || {};
 
-    console.log(req.body);
-
     if (!userName && !email && !fullName) throw new ApiError(401, "Either Username, Email or Full Name is Required!");
 
     const userInDB = await User.findByIdAndUpdate(
@@ -218,3 +217,40 @@ const updateAccDetails = asyncHandler(async (req, res) => {
             .status(200)
             .json(new ApiResponse(201, { user: userInDB }, "Account Details Updated!"));
 });
+
+const updateImage = asyncHandler(async (req, res) => {
+    const imgType = req.params.imageType === "cover" ? "coverImage" : "avatar";
+    const image = req.files?.[imgType]?.[0];
+
+    // If avatar doesn't exists, then throw error
+    if (!image) throw new ApiError(400, `${imgType} is Required!`);
+    
+    // Upload the New Image to Cloudinary
+    const uploadedImg = await uploadAssetToCloudinary(image.path);
+    if (!uploadedImg) throw new ApiError(500, `Failed to upload ${imgType}`);
+
+    // Find the User and it's Avatar/CoverImg URL stored in DB by using `req.user._id`
+    const userInDB = await User.findById(req.user._id).select(imgType);
+    if (!userInDB) throw new ApiError(404, "User not found");
+
+    // Store Old Image URL in a variable for using it to delete the avatar from Cloudinary
+    const oldImgURL = userInDB[imgType];
+
+    // Update the User's Avatar/CoverImg to New URL, and save in DB
+    userInDB[imgType] = uploadedImg.secure_url;
+    const updatedUser = await userInDB.save({ validateBeforeSave: false });
+
+    // Send Success Response to the Client, with Images URL in Data
+    res.status(200) .json(
+        new ApiResponse(201, { [imgType]: updatedUser[imgType] }, `${imgType} Updated Successfully!`));
+
+    if (oldImgURL) {
+        // Get it's Public ID
+        const public_id = getImgPublicIdUsingURLSync(oldImgURL);
+        
+        // Delete the Old Images from Cloudinary
+        deleteAssetFromCloudinary(public_id);
+    }
+});
+
+export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage};
