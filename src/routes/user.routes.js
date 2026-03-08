@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImg } from "../controllers/user.controller.js";
+import { registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT }  from "../middlewares/auth.middleware.js";
 import ApiError from "../utils/ApiError.js";
@@ -34,7 +34,7 @@ router.patch("/me", verifyJWT, updateAccDetails );
 
 router.patch("/me/:imageType", verifyJWT, validateImageType, 
     upload.fields([ {name: "avatar", maxCount: 1}, {name: "coverImage", maxCount: 1} ]), 
-    updateImg(req, res)
+    updateImage
 );
 
 export default router;

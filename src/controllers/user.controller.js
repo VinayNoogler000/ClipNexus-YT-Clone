@@ -1,11 +1,6 @@
-import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
+import { ApiError, ApiResponse, asyncHandler, uploadAssetToCloudinary, deleteAssetFromCloudinary, genRefreshAndAccessTokens, getImgPublicIdUsingURLSync } from "../utils/index.js"
 import { User } from "../models/user.model.js";
-import { deleteAssetFromCloudinary, uploadAssetToCloudinary } from "../utils/cloudinary.js";
-import ApiResponse from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken'
-import { genRefreshAndAccessTokens } from "../utils/genTokens.js";
-import { getImgPublicIdUsingURLSync } from "../utils/getImgPublicId.js";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
