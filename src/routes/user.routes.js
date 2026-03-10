@@ -6,7 +6,7 @@ import ApiError from "../utils/ApiError.js";
 
 const validateImageType = (req, _, next) => {
     const { imageType } = req.params;
-    if (imageType !== "avatar" && imageType !== "cover") {
+    if (imageType !== "avatar" && imageType !== "cover-image") {
         throw new ApiError(400, "Invalid image type. Use 'avatar' or 'cover'.");
     }
     next();
@@ -32,7 +32,7 @@ router.get("/me", verifyJWT, getCurrUser );
 
 router.patch("/me", verifyJWT, updateAccDetails );
 
-router.patch("/me/:imageType", verifyJWT, validateImageType, 
+router.patch("/me/images/:imageType", verifyJWT, validateImageType, 
     upload.fields([ {name: "avatar", maxCount: 1}, {name: "coverImage", maxCount: 1} ]), 
     updateImage
 );

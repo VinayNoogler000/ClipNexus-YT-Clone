@@ -20,10 +20,14 @@ const uploadAssetToCloudinary = async (filePath) => {
         response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
         
     } catch (error) {
-        console.error("Error in Uploading Image: ", error);
-        response = null;
+        response = error;
     }
     fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
+    
+    if (response.name === "Error") {
+        throw new Error(`Error Uploading Image: ${response.message || "Internal Server Error"}`);
+    }
+
     return response;
 };
 

@@ -214,7 +214,7 @@ const updateAccDetails = asyncHandler(async (req, res) => {
 });
 
 const updateImage = asyncHandler(async (req, res) => {
-    const imgType = req.params.imageType === "cover" ? "coverImage" : "avatar";
+    const imgType = req.params.imageType === "cover-image" ? "coverImage" : "avatar";
     const image = req.files?.[imgType]?.[0];
 
     // If avatar doesn't exists, then throw error
@@ -222,7 +222,7 @@ const updateImage = asyncHandler(async (req, res) => {
     
     // Upload the New Image to Cloudinary
     const uploadedImg = await uploadAssetToCloudinary(image.path);
-    if (!uploadedImg) throw new ApiError(500, `Failed to upload ${imgType}`);
+    if (!uploadedImg) throw new ApiError(500, `Failed to upload "${imgType}". Might be due to very large file size.`);
 
     // Find the User and it's Avatar/CoverImg URL stored in DB by using `req.user._id`
     const userInDB = await User.findById(req.user._id).select(imgType);
