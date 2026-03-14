@@ -248,4 +248,63 @@ const updateImage = asyncHandler(async (req, res) => {
     }
 });
 
-export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage};
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const { userName } = req.params;
+
+    if (!userName && userName.trim() !== "") throw new ApiError(400, "Username is Missing!");
+    
+    const channel = await User.aggregate([
+        { $match: { userName: userName?.toLowerCase() } },
+
+        { $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "channel",
+            as: "subscribers"
+        }},
+
+        { $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "subscriber",
+            as: "channelsSubscribedTo"
+        }},
+
+        { $addFields: {
+            subscribersCount: {
+                $size: "$subscribers"
+            },
+            channelsSubscribedToCount: {
+                $size: "$channelsSubscribedTo"
+            },
+            isSubscribed: {
+                $cond: {
+                    if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                    then: true,
+                    else: false
+                }
+            }
+        } },
+
+        { $project: {
+            fullName: 1,
+            userName: 1,
+            email: 1,
+            subscribersCount: 1,
+            channelsSubscribedToCount: 1,
+            isSubscribed: 1,
+            avatar: 1,
+            coverImage: 1,
+            createdAt: 1
+        }}
+    ])
+    console.log("After Aggregation: ", channel);
+
+    if (!channel?.length ) throw new ApiError (400, "Channel Does Not Exists!");
+
+    return res
+        .status(200)
+        .json(new ApiResponse(201, { channel: channel[0] }, "User Channel Fetched Successfully!"));
+});
+
+export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage, getUserChannelProfile};
