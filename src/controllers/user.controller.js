@@ -1,6 +1,7 @@
 import { ApiError, ApiResponse, asyncHandler, uploadAssetToCloudinary, deleteAssetFromCloudinary, genRefreshAndAccessTokens, getImgPublicIdUsingURLSync } from "../utils/index.js"
 import { User } from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
+import mongoose from "mongoose";
 
 const registeredUser = asyncHandler(async (req, res, err) => {
     // Extract the textual-data from 'req.body' and files/images from 'req.fles', then store it in proper & semantic variables
@@ -307,4 +308,45 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, { channel: channel[0] }, "User Channel Fetched Successfully!"));
 });
 
-export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage, getUserChannelProfile};
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {$match: {_id: new mongoose.Types.ObjectId(req.user._id)}},
+
+        {$lookup: {
+            from: "videos",
+            localField: "watchHistory",
+            foreignField: "_id",
+            as: "watchHistory",
+            pipeline: [ // for Every Watched Video (doc) stored in the "watchHistory" array
+                {
+                    $lookup: {
+                        from: "users",
+                        foreignField: "_id",
+                        localField: "owner",
+                        as: "owner",
+                        pipeline: [
+                            {$project: {
+                                fullName: 1,
+                                userName: 1,
+                                avatar: 1
+                            }}
+                        ]
+                    }
+                },
+                {
+                    $addFields: {
+                        owner: {
+                            $first: "$owner"
+                        }
+                    }
+                }
+            ]
+        }},
+    ])
+
+    return res
+        .status(200)
+        .json(new ApiResponse(201, user[0].watchHistory, "Watched History Fetched Successfully!"));
+});
+
+export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage, getUserChannelProfile, getWatchHistory};
