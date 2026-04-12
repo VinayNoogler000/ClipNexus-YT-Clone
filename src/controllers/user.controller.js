@@ -250,9 +250,9 @@ const updateImage = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const { userName } = req.params;
+    const { username } = req.params;
 
-    if (!userName && userName.trim() !== "") throw new ApiError(400, "Username is Missing!");
+    if (!username && username.trim() !== "") throw new ApiError(400, "Username is Missing!");
     
     const channel = await User.aggregate([
         { $match: { userName: userName?.toLowerCase() } },
@@ -346,7 +346,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(201, user[0].watchHistory, "Watched History Fetched Successfully!"));
+        .json(new ApiResponse(201, { watchHistory: user[0].watchHistory }, "Watched History Fetched Successfully!"));
 });
 
 export {registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage, getUserChannelProfile, getWatchHistory};

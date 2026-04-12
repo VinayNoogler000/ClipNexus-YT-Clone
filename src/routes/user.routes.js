@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage } from "../controllers/user.controller.js";
+import { registeredUser, loginUser, logoutUser, refreshAccessToken, changeCurrPassword, getCurrUser, updateAccDetails, updateImage, getUserChannelProfile, getWatchHistory } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT }  from "../middlewares/auth.middleware.js";
 import ApiError from "../utils/ApiError.js";
@@ -36,5 +36,9 @@ router.patch("/me/images/:imageType", verifyJWT, validateImageType,
     upload.fields([ {name: "avatar", maxCount: 1}, {name: "coverImage", maxCount: 1} ]), 
     updateImage
 );
+
+router.get("/:username/channel", verifyJWT, getUserChannelProfile);
+
+router.get("/me/watch-history", verifyJWT, getWatchHistory);
 
 export default router;
