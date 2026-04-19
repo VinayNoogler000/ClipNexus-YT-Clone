@@ -5,6 +5,7 @@ import { uploadAssetToCloudinary, deleteAssetFromCloudinary } from "./cloudinary
 import { genRefreshAndAccessTokens } from "./genTokens.js";
 import { getImgPublicIdUsingURLSync } from "./getImgPublicId.js";
 import deleteTempFiles from "./deleteTempFiles.js";
+import attemptFileUpload from "./attemptFileUpload.js";
 
 export { 
     ApiError,
@@ -14,5 +15,6 @@ export {
     deleteAssetFromCloudinary,
     genRefreshAndAccessTokens,
     getImgPublicIdUsingURLSync,
-    deleteTempFiles
+    deleteTempFiles,
+    attemptFileUpload
  }
