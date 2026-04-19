@@ -14,21 +14,15 @@ const uploadAssetToCloudinary = async (filePath) => {
         return null;
     }
 
-    let response;
     try {
         // Upload the file
-        response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
-        
-    } catch (error) {
-        response = error;
+        const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
+        fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
+        return response;
+    } 
+    catch (err) {
+        throw new Error(`Error Uploading Asset: ${err.message || "Internal Server Error"}`);
     }
-    fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
-    
-    if (response.name === "Error") {
-        throw new Error(`Error Uploading Image: ${response.message || "Internal Server Error"}`);
-    }
-
-    return response;
 };
 
 // Function to Delete a image/video file permanently
