@@ -4,6 +4,7 @@ import asyncHandler from "./asyncHandler.js";
 import { uploadAssetToCloudinary, deleteAssetFromCloudinary } from "./cloudinary.js";
 import { genRefreshAndAccessTokens } from "./genTokens.js";
 import { getImgPublicIdUsingURLSync } from "./getImgPublicId.js";
+import deleteTempFiles from "./deleteTempFiles.js";
 
 export { 
     ApiError,
@@ -12,5 +13,6 @@ export {
     uploadAssetToCloudinary,
     deleteAssetFromCloudinary,
     genRefreshAndAccessTokens,
-    getImgPublicIdUsingURLSync
+    getImgPublicIdUsingURLSync,
+    deleteTempFiles
  }
