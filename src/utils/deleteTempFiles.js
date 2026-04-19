@@ -1,4 +1,4 @@
-export default function deleteTemporaryFiles(filePaths) {
+export default function deleteTemporaryFiles(...filePaths) {
     filePaths.forEach(filePath => {
         if (filePath) {
             try {
