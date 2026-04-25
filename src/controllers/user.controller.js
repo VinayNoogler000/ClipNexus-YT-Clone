@@ -227,22 +227,28 @@ const updateImage = asyncHandler(async (req, res) => {
     const imgType = req.params.imageType === "cover-image" ? "coverImage" : "avatar";
     const image = req.files?.[imgType]?.[0];
 
-    // If avatar doesn't exists, then throw error
+    // If avatar/coverImg doesn't exists, then throw error
     if (!image) throw new ApiError(400, `${imgType} is Required!`);
     
     // Upload the New Image to Cloudinary
-    const uploadedImg = await uploadAssetToCloudinary(image.path);
-    if (!uploadedImg) throw new ApiError(500, `Failed to upload "${imgType}". Might be due to very large file size.`);
+    const [uploadImgRes, _] = await attemptFileUpload(image.path);
+    if (!uploadImgRes) {
+        deleteTempFiles(image.path);
+        throw new ApiError(500, `Failed to upload "${imgType}". Might be due to very large file size.`);
+    }
 
     // Find the User and it's Avatar/CoverImg URL stored in DB by using `req.user._id`
     const userInDB = await User.findById(req.user._id).select(imgType);
-    if (!userInDB) throw new ApiError(404, "User not found");
+    if (!userInDB) {
+        deleteTempFiles(image.path);
+        throw new ApiError(404, "User not found");
+    }
 
     // Store Old Image URL in a variable for using it to delete the avatar from Cloudinary
     const oldImgURL = userInDB[imgType];
 
     // Update the User's Avatar/CoverImg to New URL, and save in DB
-    userInDB[imgType] = uploadedImg.secure_url;
+    userInDB[imgType] = uploadImgRes.secure_url;
     const updatedUser = await userInDB.save({ validateBeforeSave: false });
 
     // Send Success Response to the Client, with Images URL in Data
