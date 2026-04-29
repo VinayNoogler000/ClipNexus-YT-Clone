@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs";
+import { deleteTempFiles } from "./index.js";
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -16,8 +17,13 @@ const uploadAssetToCloudinary = async (filePath) => {
 
     try {
         // Upload the file
-        const response = await cloudinary.uploader.upload(filePath, { resource_type: "auto", asset_folder: "ClipNexus" });
-        fs.unlinkSync(filePath); // removes the locally stored files (avatar/coverImg) from "/public/temp/"
+        const fileName = filePath.split("\\").splice(-1)[0];
+        const response = await cloudinary.uploader.upload(filePath, { 
+            resource_type: "auto",
+            asset_folder: "ClipNexus",
+            eager: fileName.includes("videoFile") ? [ { format: "jpg" } ] : null
+        });
+        deleteTempFiles(filePath);
         return response;
     } 
     catch (err) {
