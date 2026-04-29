@@ -7,9 +7,14 @@ export default async function attemptFileUpload(filePath) {
     
     let uploadAssetRes, uploadAttemptCount = 0;
     do {
-        uploadAssetRes = await uploadAssetToCloudinary(filePath);
-        uploadAttemptCount++;
-    } while (uploadAssetRes instanceof Error && uploadAttemptCount < 5);
+        try {
+            uploadAssetRes = await uploadAssetToCloudinary(filePath);
+        }
+        catch (err) {
+            uploadAssetRes = err;
+        }
+        finally { uploadAttemptCount++; }
+    } while ((uploadAssetRes instanceof Error && !uploadAssetRes.message.includes("File size too large")) && uploadAttemptCount < 5);
 
     return [uploadAssetRes, uploadAttemptCount];
 }
